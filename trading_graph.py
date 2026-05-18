@@ -23,7 +23,7 @@ LM_STUDIO_PROVIDER_CONFIG = {
     "label": "LM Studio",
     "config_key": "lm_studio_api_key",
     "env_keys": ("LM_STUDIO_API_KEY",),
-    "base_url": "http://127.0.0.1:1234/v1",
+    "base_url": DEFAULT_CONFIG["lm_studio_base_url"],
 }
 MINIMAX_PROVIDER_CONFIG = {
     "minimax": {
@@ -83,24 +83,24 @@ class TradingGraph:
     def _get_api_key(self, provider: str = "openai") -> str:
         """
         Get API key with proper validation and error handling.
-        
+
         Args:
             provider: The provider name ("openai", "anthropic", "qwen", "minimax", or "minimax_cn")
-        
+
         Returns:
             str: The API key for the specified provider
-            
+
         Raises:
             ValueError: If API key is missing or invalid
         """
         if provider == "openai":
             # First check if API key is provided in config
             api_key = self.config.get("api_key")
-            
+
             # If not in config, check environment variable
             if not api_key:
                 api_key = os.environ.get("OPENAI_API_KEY")
-            
+
             # Validate the API key
             if not api_key:
                 raise ValueError(
@@ -109,7 +109,7 @@ class TradingGraph:
                     "2. Update the config with: config['api_key'] = 'your-key-here'\n"
                     "3. Use the web interface to update the API key"
                 )
-            
+
             if api_key == "your-openai-api-key-here" or api_key == "":
                 raise ValueError(
                     "Please replace the placeholder API key with your actual OpenAI API key. "
@@ -118,11 +118,11 @@ class TradingGraph:
         elif provider == "anthropic":
             # First check if API key is provided in config
             api_key = self.config.get("anthropic_api_key")
-            
+
             # If not in config, check environment variable
             if not api_key:
                 api_key = os.environ.get("ANTHROPIC_API_KEY")
-            
+
             # Validate the API key
             if not api_key:
                 raise ValueError(
@@ -130,7 +130,7 @@ class TradingGraph:
                     "1. Set environment variable: export ANTHROPIC_API_KEY='your-key-here'\n"
                     "2. Update the config with: config['anthropic_api_key'] = 'your-key-here'\n"
                 )
-            
+
             if api_key == "":
                 raise ValueError(
                     "Please provide your actual Anthropic API key. "
@@ -209,7 +209,7 @@ class TradingGraph:
                 )
         else:
             raise ValueError(f"Unsupported provider: {provider}. Must be one of {', '.join(SUPPORTED_PROVIDERS)}")
-        
+
         return api_key
 
     def _create_llm(
@@ -325,7 +325,7 @@ class TradingGraph:
         """
         Update the API key in the config and refresh LLMs.
         This method is called by the web interface when API key is updated.
-        
+
         Args:
             api_key (str): The new API key
             provider (str): The provider name, defaults to "openai"
@@ -333,13 +333,13 @@ class TradingGraph:
         if provider == "openai":
             # Update the config with the new API key
             self.config["api_key"] = api_key
-            
+
             # Also update the environment variable for consistency
             os.environ["OPENAI_API_KEY"] = api_key
         elif provider == "anthropic":
             # Update the config with the new API key
             self.config["anthropic_api_key"] = api_key
-            
+
             # Also update the environment variable for consistency
             os.environ["ANTHROPIC_API_KEY"] = api_key
         elif provider == "qwen":
@@ -368,6 +368,6 @@ class TradingGraph:
             os.environ["LM_STUDIO_API_KEY"] = api_key
         else:
             raise ValueError(f"Unsupported provider: {provider}. Must be one of {', '.join(SUPPORTED_PROVIDERS)}")
-        
+
         # Refresh the LLMs with the new API key
         self.refresh_llms()
