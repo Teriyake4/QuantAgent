@@ -1,8 +1,8 @@
 DEFAULT_CONFIG = {
-    "agent_llm_model": "gpt-4o-mini",
-    "graph_llm_model": "gpt-4o",
-    "agent_llm_provider": "openai",  # "openai", "anthropic", "qwen", "minimax", or "minimax_cn"
-    "graph_llm_provider": "openai",  # "openai", "anthropic", "qwen", "minimax", or "minimax_cn"
+    "agent_llm_model": "gemma-4-26b-a4b",
+    "graph_llm_model": "gemma-4-26b-a4b",
+    "agent_llm_provider": "lm_studio",  # "openai", "anthropic", "qwen", "minimax", "minimax_cn", or "lm_studio"
+    "graph_llm_provider": "lm_studio",  # "openai", "anthropic", "qwen", "minimax", "minimax_cn", or "lm_studio"
     "agent_llm_temperature": 0.1,
     "graph_llm_temperature": 0.1,
     "api_key": "sk-",  # OpenAI API key
@@ -10,4 +10,5 @@ DEFAULT_CONFIG = {
     "qwen_api_key": "sk-",  # Qwen API key (optional, can also use DASHSCOPE_API_KEY env var)
     "minimax_api_key": "",  # MiniMax API key (optional, can also use MINIMAX_API_KEY env var)
     "minimax_cn_api_key": "",  # MiniMax CN API key (optional, can also use MINIMAX_CN_API_KEY or MINIMAX_API_KEY env var)
+    "lm_studio_api_key": "",  # LM Studio API key (optional, can also use LM_STUDIO_API_KEY env var)
 }

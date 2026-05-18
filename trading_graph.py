@@ -17,7 +17,14 @@ from graph_setup import SetGraph
 from graph_util import TechnicalTools
 
 
-SUPPORTED_PROVIDERS = ("openai", "anthropic", "qwen", "minimax", "minimax_cn")
+SUPPORTED_PROVIDERS = ("openai", "anthropic", "qwen", "minimax", "minimax_cn", "lm_studio")
+
+LM_STUDIO_PROVIDER_CONFIG = {
+    "label": "LM Studio",
+    "config_key": "lm_studio_api_key",
+    "env_keys": ("LM_STUDIO_API_KEY",),
+    "base_url": "http://127.0.0.1:1234/v1",
+}
 MINIMAX_PROVIDER_CONFIG = {
     "minimax": {
         "label": "MiniMax",
@@ -178,6 +185,28 @@ class TradingGraph:
                     f"Please provide your actual {provider_config['label']} API key. "
                     f"You can get one from: {provider_config['console_url']}"
                 )
+        elif provider == "lm_studio":
+            provider_config = LM_STUDIO_PROVIDER_CONFIG
+            api_key = self.config.get(provider_config["config_key"])
+
+            if not api_key:
+                for env_key in provider_config["env_keys"]:
+                    api_key = os.environ.get(env_key)
+                    if api_key:
+                        break
+
+            if not api_key:
+                env_exports = "\n".join(
+                    f"{idx}. Set environment variable: export {env_key}='your-key-here'"
+                    for idx, env_key in enumerate(provider_config["env_keys"], start=1)
+                )
+                raise ValueError(
+                    f"{provider_config['label']} API key not found. Please set it using one of these methods:\n"
+                    f"{env_exports}\n"
+                    f"{len(provider_config['env_keys']) + 1}. Update the config with: "
+                    f"config['{provider_config['config_key']}'] = 'your-key-here'\n"
+                    f"{len(provider_config['env_keys']) + 2}. Use the web interface to update the API key"
+                )
         else:
             raise ValueError(f"Unsupported provider: {provider}. Must be one of {', '.join(SUPPORTED_PROVIDERS)}")
         
@@ -230,6 +259,14 @@ class TradingGraph:
                 temperature=clamped_temp,
                 api_key=api_key,
                 openai_api_base=MINIMAX_PROVIDER_CONFIG[provider]["base_url"],
+            )
+        elif provider == "lm_studio":
+            # LM Studio uses OpenAI-compatible APIs
+            return ChatOpenAI(
+                model=model,
+                temperature=temperature,
+                api_key=api_key,
+                openai_api_base=LM_STUDIO_PROVIDER_CONFIG["base_url"],
             )
         else:
             raise ValueError(f"Unsupported provider: {provider}. Must be one of {', '.join(SUPPORTED_PROVIDERS)}")
@@ -323,6 +360,12 @@ class TradingGraph:
 
             # Keep CN credentials separate from the global MiniMax key.
             os.environ["MINIMAX_CN_API_KEY"] = api_key
+        elif provider == "lm_studio":
+            # Update the config with the new API key
+            self.config["lm_studio_api_key"] = api_key
+
+            # Also update the environment variable for consistency
+            os.environ["LM_STUDIO_API_KEY"] = api_key
         else:
             raise ValueError(f"Unsupported provider: {provider}. Must be one of {', '.join(SUPPORTED_PROVIDERS)}")
         

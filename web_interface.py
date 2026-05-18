@@ -16,13 +16,14 @@ from trading_graph import TradingGraph
 
 app = Flask(__name__)
 
-SUPPORTED_PROVIDERS = ("openai", "anthropic", "qwen", "minimax", "minimax_cn")
+SUPPORTED_PROVIDERS = ("openai", "anthropic", "qwen", "minimax", "minimax_cn", "lm_studio")
 PROVIDER_DISPLAY_NAMES = {
     "openai": "OpenAI",
     "anthropic": "Anthropic",
     "qwen": "Qwen",
     "minimax": "MiniMax",
     "minimax_cn": "MiniMax CN",
+    "lm_studio": "LM Studio",
 }
 MINIMAX_PROVIDER_CONFIG = {
     "minimax": {
@@ -46,7 +47,10 @@ MINIMAX_PROVIDER_CONFIG = {
 
 def apply_provider_defaults(config: Dict[str, Any], provider: str) -> None:
     """Set provider-specific default models in a config dictionary."""
-    if provider == "anthropic":
+    if provider == "lm_studio":
+        # LM Studio uses OpenAI-compatible endpoint; keep existing models
+        pass
+    elif provider == "anthropic":
         if not config["agent_llm_model"].startswith("claude"):
             config["agent_llm_model"] = "claude-haiku-4-5-20251001"
         if not config["graph_llm_model"].startswith("claude"):
@@ -1004,6 +1008,8 @@ def update_api_key():
             os.environ["MINIMAX_API_KEY"] = new_api_key
         elif provider == "minimax_cn":
             os.environ["MINIMAX_CN_API_KEY"] = new_api_key
+        elif provider == "lm_studio":
+            os.environ["LM_STUDIO_API_KEY"] = new_api_key
 
         set_active_provider(provider)
 
@@ -1018,6 +1024,8 @@ def update_api_key():
             analyzer.config["minimax_api_key"] = new_api_key
         elif provider == "minimax_cn":
             analyzer.config["minimax_cn_api_key"] = new_api_key
+        elif provider == "lm_studio":
+            analyzer.config["lm_studio_api_key"] = new_api_key
 
         analyzer.trading_graph.config.update(analyzer.config)
 
@@ -1067,6 +1075,10 @@ def get_api_key_status():
                 api_key = os.environ.get("MINIMAX_CN_API_KEY", "")
             if not api_key:
                 api_key = os.environ.get("MINIMAX_API_KEY", "")
+        elif provider == "lm_studio":
+            api_key = analyzer.config.get("lm_studio_api_key", "") if hasattr(analyzer, 'config') else ""
+            if not api_key:
+                api_key = os.environ.get("LM_STUDIO_API_KEY", "")
         else:
             api_key = ""
         
