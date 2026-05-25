@@ -1,6 +1,6 @@
 DEFAULT_CONFIG = {
-    "agent_llm_model": "gemma-4-26b-a4b",
-    "graph_llm_model": "gemma-4-26b-a4b",
+    "agent_llm_model": "google/gemma-4-26b-a4b",
+    "graph_llm_model": "google/gemma-4-26b-a4b",
     "agent_llm_provider": "lm_studio",  # "openai", "anthropic", "qwen", "minimax", "minimax_cn", or "lm_studio"
     "graph_llm_provider": "lm_studio",  # "openai", "anthropic", "qwen", "minimax", "minimax_cn", or "lm_studio"
     "agent_llm_temperature": 0.1,
