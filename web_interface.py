@@ -597,6 +597,9 @@ class WebTradingAnalyzer:
                 _ = llm.invoke([("user", "Hello")])
 
                 provider_name = "Qwen"
+            elif provider == "lm_studio":
+                # LM Studio doesn't require an API key
+                return {"valid": True, "message": "LM Studio API key is valid (local server)"}
             elif provider in MINIMAX_PROVIDER_CONFIG:
                 from openai import OpenAI as _OpenAI
                 minimax_config = MINIMAX_PROVIDER_CONFIG[provider]
@@ -989,13 +992,14 @@ def update_api_key():
         new_api_key = data.get("api_key")
         provider = data.get("provider", "openai")  # Default to "openai" for backward compatibility
 
-        if not new_api_key:
-            return jsonify({"error": "API key is required"})
-
         if provider not in SUPPORTED_PROVIDERS:
             return jsonify({"error": f"Provider must be one of {', '.join(SUPPORTED_PROVIDERS)}"})
 
-        print(f"Updating {provider} API key to: {new_api_key[:8]}...{new_api_key[-4:]}")
+        if provider != "lm_studio" and not new_api_key:
+            return jsonify({"error": "API key is required"})
+
+        if new_api_key:
+            print(f"Updating {provider} API key to: {new_api_key[:8]}...{new_api_key[-4:]}")
 
         # Update the environment variable
         if provider == "openai":
@@ -1076,9 +1080,8 @@ def get_api_key_status():
             if not api_key:
                 api_key = os.environ.get("MINIMAX_API_KEY", "")
         elif provider == "lm_studio":
-            api_key = analyzer.config.get("lm_studio_api_key", "") if hasattr(analyzer, 'config') else ""
-            if not api_key:
-                api_key = os.environ.get("LM_STUDIO_API_KEY", "")
+            # LM Studio doesn't require an API key
+            api_key = "valid"
         else:
             api_key = ""
         

@@ -194,19 +194,9 @@ class TradingGraph:
                     api_key = os.environ.get(env_key)
                     if api_key:
                         break
-
+            # Otherwise API key is optional, so set dummy key
             if not api_key:
-                env_exports = "\n".join(
-                    f"{idx}. Set environment variable: export {env_key}='your-key-here'"
-                    for idx, env_key in enumerate(provider_config["env_keys"], start=1)
-                )
-                raise ValueError(
-                    f"{provider_config['label']} API key not found. Please set it using one of these methods:\n"
-                    f"{env_exports}\n"
-                    f"{len(provider_config['env_keys']) + 1}. Update the config with: "
-                    f"config['{provider_config['config_key']}'] = 'your-key-here'\n"
-                    f"{len(provider_config['env_keys']) + 2}. Use the web interface to update the API key"
-                )
+                api_key = "dummy"
         else:
             raise ValueError(f"Unsupported provider: {provider}. Must be one of {', '.join(SUPPORTED_PROVIDERS)}")
 
