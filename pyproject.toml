@@ -29,3 +29,19 @@ dependencies = [
     "TA-Lib==0.6.8",
     "yfinance==1.4.0"
 ]
+
+[tool.setuptools]
+py-modules = [
+    "agent_state",
+    "color_style",
+    "decision_agent",
+    "default_config",
+    "graph_setup",
+    "graph_util",
+    "indicator_agent",
+    "pattern_agent",
+    "static_util",
+    "trading_graph",
+    "trend_agent"
+    "web_interface"
+]
