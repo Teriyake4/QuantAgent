@@ -42,6 +42,6 @@ py-modules = [
     "pattern_agent",
     "static_util",
     "trading_graph",
-    "trend_agent"
+    "trend_agent",
     "web_interface"
 ]
