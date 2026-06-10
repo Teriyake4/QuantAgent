@@ -456,5 +456,93 @@ class TestProviderSwitchBackToOpenAI(unittest.TestCase):
         self.assertEqual(analyzer.config["agent_llm_model"], "gpt-4o-mini")
         self.assertEqual(analyzer.config["graph_llm_model"], "gpt-4o")
 
+
+class TestApplyProviderDefaults(unittest.TestCase):
+    """Tests for apply_provider_defaults() with lm_studio provider."""
+
+    def test_lm_studio_sets_default_model(self):
+        """Switching to lm_studio should set default model if not already google-prefixed."""
+        config = DEFAULT_CONFIG.copy()
+        config["agent_llm_model"] = "gpt-4o"
+        config["graph_llm_model"] = "gpt-4o"
+
+        from web_interface import apply_provider_defaults
+        apply_provider_defaults(config, "lm_studio")
+
+        self.assertTrue(config["agent_llm_model"].startswith("google"))
+        self.assertTrue(config["graph_llm_model"].startswith("google"))
+
+    def test_lm_studio_skips_model_change_if_already_google(self):
+        """Should not override model if it already starts with 'google'."""
+        config = DEFAULT_CONFIG.copy()
+        config["agent_llm_model"] = "google/my-custom-model"
+        config["graph_llm_model"] = "google/another-model"
+
+        from web_interface import apply_provider_defaults
+        apply_provider_defaults(config, "lm_studio")
+
+        self.assertEqual(config["agent_llm_model"], "google/my-custom-model")
+        self.assertEqual(config["graph_llm_model"], "google/another-model")
+
+
+class TestValidateApiKeyLmStudio(unittest.TestCase):
+    """Tests for validate_api_key() with lm_studio provider."""
+
+    @patch("web_interface.TradingGraph")
+    def test_validate_api_key_lm_studio_returns_valid(self, mock_tg_class):
+        """POST /api/validate-api-key for lm_studio should return valid: True."""
+        mock_tg = MagicMock()
+        mock_tg.config = DEFAULT_CONFIG.copy()
+        mock_tg_class.return_value = mock_tg
+
+        from web_interface import app, analyzer
+        config = DEFAULT_CONFIG.copy()
+        config["lm_studio_api_key"] = ""
+        config["agent_llm_provider"] = "lm_studio"
+        analyzer.config = config
+        analyzer.trading_graph = mock_tg
+
+        client = app.test_client()
+        resp = client.post(
+            "/api/validate-api-key",
+            json={"provider": "lm_studio"},
+            content_type="application/json",
+        )
+        data = resp.get_json()
+        self.assertTrue(data.get("valid"))
+
+
+class TestUpdateProviderNeedsApiKey(unittest.TestCase):
+    """Tests for the needs_api_key flow in update_provider()."""
+
+    @patch("web_interface.TradingGraph")
+    def test_update_provider_lm_studio_needs_api_key(self, mock_tg_class):
+        """When refresh_llms raises 'API key not found', should return needs_api_key: True."""
+        mock_tg = MagicMock()
+        mock_tg.config = DEFAULT_CONFIG.copy()
+        mock_tg_class.return_value = mock_tg
+
+        from web_interface import app, analyzer
+        config = DEFAULT_CONFIG.copy()
+        config["lm_studio_api_key"] = ""
+        config["agent_llm_provider"] = "lm_studio"
+        config["graph_llm_provider"] = "lm_studio"
+        config["agent_llm_model"] = "local-model"
+        config["graph_llm_model"] = "local-model"
+        analyzer.config = config
+        analyzer.trading_graph = mock_tg
+        analyzer.trading_graph.refresh_llms.side_effect = ValueError("API key not found")
+
+        client = app.test_client()
+        resp = client.post(
+            "/api/update-provider",
+            json={"provider": "lm_studio"},
+            content_type="application/json",
+        )
+        data = resp.get_json()
+        self.assertTrue(data.get("success"))
+        self.assertTrue(data.get("needs_api_key"))
+        self.assertIn("Please set its API key", data.get("message", ""))
+
 if __name__ == "__main__":
     unittest.main()
