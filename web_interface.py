@@ -48,8 +48,11 @@ MINIMAX_PROVIDER_CONFIG = {
 def apply_provider_defaults(config: Dict[str, Any], provider: str) -> None:
     """Set provider-specific default models in a config dictionary."""
     if provider == "lm_studio":
-        # LM Studio uses OpenAI-compatible endpoint; keep existing models
-        pass
+        # This may error for the user eventually if they don't have the correct model installed locally
+        if not config["agent_llm_model"].startswith("google"):
+            config["agent_llm_model"] = "google/gemma-4-26b-a4b"
+        if not config["graph_llm_model"].startswith("google"):
+            config["graph_llm_model"] = "google/gemma-4-26b-a4b"
     elif provider == "anthropic":
         if not config["agent_llm_model"].startswith("claude"):
             config["agent_llm_model"] = "claude-haiku-4-5-20251001"
@@ -65,9 +68,9 @@ def apply_provider_defaults(config: Dict[str, Any], provider: str) -> None:
         config["agent_llm_model"] = minimax_model
         config["graph_llm_model"] = minimax_model
     elif provider == "openai":
-        if config["agent_llm_model"].startswith(("claude", "qwen", "MiniMax")):
+        if not config["agent_llm_model"].startswith("gpt"):
             config["agent_llm_model"] = "gpt-4o-mini"
-        if config["graph_llm_model"].startswith(("claude", "qwen", "MiniMax")):
+        if not config["graph_llm_model"].startswith("gpt"):
             config["graph_llm_model"] = "gpt-4o"
 
 
@@ -382,7 +385,7 @@ class WebTradingAnalyzer:
 
         except Exception as e:
             error_msg = str(e)
-            
+
             # Get current provider from config
             provider = self.config.get("agent_llm_provider", "openai")
             provider_name = PROVIDER_DISPLAY_NAMES.get(provider, provider)
@@ -551,18 +554,18 @@ class WebTradingAnalyzer:
             # Get provider from config if not provided
             if provider is None:
                 provider = self.config.get("agent_llm_provider", "openai")
-            
+
             if provider == "openai":
                 from openai import OpenAI
                 client = OpenAI()
-                
+
                 # Make a simple test call
                 _ = client.chat.completions.create(
                     model="gpt-4o-mini",
                     messages=[{"role": "user", "content": "Hello"}],
                     max_tokens=5,
                 )
-                
+
                 provider_name = "OpenAI"
             elif provider == "anthropic":
                 from anthropic import Anthropic
@@ -572,16 +575,16 @@ class WebTradingAnalyzer:
                         "valid": False,
                         "error": "❌ Invalid API Key: The Anthropic API key is not set. Please update it in the Settings section.",
                     }
-                
+
                 client = Anthropic(api_key=api_key)
-                
+
                 # Make a simple test call
                 _ = client.messages.create(
                     model="claude-haiku-4-5-20251001",
                     max_tokens=5,
                     messages=[{"role": "user", "content": "Hello"}],
                 )
-                
+
                 provider_name = "Anthropic"
             elif provider == "qwen":
                 from langchain_qwq import ChatQwen
@@ -631,7 +634,7 @@ class WebTradingAnalyzer:
 
         except Exception as e:
             error_msg = str(e)
-            
+
             # Determine provider name for error messages
             if provider is None:
                 provider = self.config.get("agent_llm_provider", "openai")
@@ -1051,7 +1054,7 @@ def get_api_key_status():
     """API endpoint to check if API key is set for a provider."""
     try:
         provider = request.args.get("provider", "openai")
-        
+
         # First check environment variables
         if provider == "openai":
             api_key = os.environ.get("OPENAI_API_KEY", "")
@@ -1084,7 +1087,7 @@ def get_api_key_status():
             api_key = "valid"
         else:
             api_key = ""
-        
+
         if api_key and api_key != "your-openai-api-key-here" and api_key != "":
             # Return masked version for security
             masked_key = (
