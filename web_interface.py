@@ -50,9 +50,9 @@ def apply_provider_defaults(config: Dict[str, Any], provider: str) -> None:
     if provider == "lm_studio":
         # This may error for the user eventually if they don't have the correct model installed locally
         if not config["agent_llm_model"].startswith("google"):
-            config["agent_llm_model"] = "google/gemma-4-26b-a4b"
+            config["agent_llm_model"] = "google/gemma-4-12b-qat"
         if not config["graph_llm_model"].startswith("google"):
-            config["graph_llm_model"] = "google/gemma-4-26b-a4b"
+            config["graph_llm_model"] = "google/gemma-4-12b-qat"
     elif provider == "anthropic":
         if not config["agent_llm_model"].startswith("claude"):
             config["agent_llm_model"] = "claude-haiku-4-5-20251001"
