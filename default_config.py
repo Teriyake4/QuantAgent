@@ -1,8 +1,8 @@
 DEFAULT_CONFIG = {
-    "agent_llm_model": "google/gemma-4-12b-qat",
-    "graph_llm_model": "google/gemma-4-12b-qat",
-    "agent_llm_provider": "lm_studio",  # "openai", "anthropic", "qwen", "minimax", "minimax_cn", or "lm_studio"
-    "graph_llm_provider": "lm_studio",  # "openai", "anthropic", "qwen", "minimax", "minimax_cn", or "lm_studio"
+    "agent_llm_model": "gpt-4o-mini",
+    "graph_llm_model": "gpt-4o",
+    "agent_llm_provider": "openai",  # "openai", "anthropic", "qwen", "minimax", "minimax_cn", or "lm_studio"
+    "graph_llm_provider": "openai",  # "openai", "anthropic", "qwen", "minimax", "minimax_cn", or "lm_studio"
     "agent_llm_temperature": 0.1,
     "graph_llm_temperature": 0.1,
     "api_key": "sk-",  # OpenAI API key
