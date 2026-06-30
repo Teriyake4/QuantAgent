@@ -62,7 +62,7 @@ if "langchain_core.messages" not in sys.modules:
     messages_module.ToolMessage = MagicMock
     sys.modules["langchain_core.messages"] = messages_module
 
-from default_config import DEFAULT_CONFIG
+from QuantAgent.default_config import DEFAULT_CONFIG
 
 
 class TestDefaultConfig(unittest.TestCase):
@@ -94,7 +94,7 @@ class TestTradingGraphGetApiKey(unittest.TestCase):
 
     def _make_graph(self, config):
         """Create a TradingGraph with mocked LLM creation."""
-        from trading_graph import TradingGraph
+        from QuantAgent.trading_graph import TradingGraph
         orig_create = TradingGraph._create_llm
         TradingGraph._create_llm = MagicMock(return_value=MagicMock())
         tg = TradingGraph(config=config)
@@ -143,14 +143,14 @@ class TestTradingGraphCreateLlm(unittest.TestCase):
 
     def _make_graph(self, config):
         """Create a TradingGraph with mocked LLM creation."""
-        from trading_graph import TradingGraph
+        from QuantAgent.trading_graph import TradingGraph
         orig_create = TradingGraph._create_llm
         TradingGraph._create_llm = MagicMock(return_value=MagicMock())
         tg = TradingGraph(config=config)
         TradingGraph._create_llm = orig_create
         return tg
 
-    @patch("trading_graph.ChatOpenAI")
+    @patch("QuantAgent.trading_graph.ChatOpenAI")
     def test_create_llm_lm_studio_uses_chatopenai(self, mock_openai):
         """LM Studio provider should create ChatOpenAI with custom base URL."""
         config = DEFAULT_CONFIG.copy()
@@ -168,7 +168,7 @@ class TestTradingGraphCreateLlm(unittest.TestCase):
             openai_api_base="http://127.0.0.1:1234/v1",
         )
 
-    @patch("trading_graph.ChatOpenAI")
+    @patch("QuantAgent.trading_graph.ChatOpenAI")
     def test_create_llm_lm_studio_uses_custom_base_url(self, mock_openai):
         """LM Studio provider should use the configured base URL from DEFAULT_CONFIG."""
         config = DEFAULT_CONFIG.copy()
@@ -189,7 +189,7 @@ class TestTradingGraphCreateLlm(unittest.TestCase):
             openai_api_base="http://127.0.0.1:1234/v1",
         )
 
-    @patch("trading_graph.ChatOpenAI")
+    @patch("QuantAgent.trading_graph.ChatOpenAI")
     def test_create_llm_lm_studio_normal_temperature(self, mock_openai):
         """Normal temperature should be passed through for LM Studio (no clamping)."""
         config = DEFAULT_CONFIG.copy()
@@ -202,7 +202,7 @@ class TestTradingGraphCreateLlm(unittest.TestCase):
         call_args = mock_openai.call_args
         self.assertAlmostEqual(call_args.kwargs["temperature"], 0.5)
 
-    @patch("trading_graph.ChatOpenAI")
+    @patch("QuantAgent.trading_graph.ChatOpenAI")
     def test_create_llm_lm_studio_zero_temperature(self, mock_openai):
         """LM Studio should pass through temperature=0.0 without clamping."""
         config = DEFAULT_CONFIG.copy()
@@ -215,7 +215,7 @@ class TestTradingGraphCreateLlm(unittest.TestCase):
         call_args = mock_openai.call_args
         self.assertAlmostEqual(call_args.kwargs["temperature"], 0.0)
 
-    @patch("trading_graph.ChatOpenAI")
+    @patch("QuantAgent.trading_graph.ChatOpenAI")
     def test_create_llm_lm_studio_high_temperature(self, mock_openai):
         """LM Studio should pass through temperature > 1.0 without clamping."""
         config = DEFAULT_CONFIG.copy()
@@ -228,7 +228,7 @@ class TestTradingGraphCreateLlm(unittest.TestCase):
         call_args = mock_openai.call_args
         self.assertAlmostEqual(call_args.kwargs["temperature"], 1.5)
 
-    @patch("trading_graph.ChatOpenAI")
+    @patch("QuantAgent.trading_graph.ChatOpenAI")
     def test_create_llm_lm_studio_with_dummy_key(self, mock_openai):
         """LM Studio should work with the dummy API key."""
         config = DEFAULT_CONFIG.copy()
@@ -253,7 +253,7 @@ class TestTradingGraphUpdateApiKey(unittest.TestCase):
     """Tests for TradingGraph.update_api_key() with lm_studio provider."""
 
     def _make_graph(self, config):
-        from trading_graph import TradingGraph
+        from QuantAgent.trading_graph import TradingGraph
         orig_create = TradingGraph._create_llm
         TradingGraph._create_llm = MagicMock(return_value=MagicMock())
         tg = TradingGraph(config=config)
@@ -288,12 +288,12 @@ class TestTradingGraphUpdateApiKey(unittest.TestCase):
 class TestTradingGraphRefreshLlms(unittest.TestCase):
     """Tests for TradingGraph.refresh_llms() with lm_studio provider."""
 
-    @patch("trading_graph.ChatOpenAI")
-    @patch("trading_graph.ChatAnthropic")
-    @patch("trading_graph.ChatQwen")
+    @patch("QuantAgent.trading_graph.ChatOpenAI")
+    @patch("QuantAgent.trading_graph.ChatAnthropic")
+    @patch("QuantAgent.trading_graph.ChatQwen")
     def test_refresh_llms_lm_studio(self, mock_qwen, mock_anthropic, mock_openai):
         """refresh_llms() should recreate LLMs when provider is lm_studio."""
-        from trading_graph import TradingGraph
+        from QuantAgent.trading_graph import TradingGraph
 
         config = DEFAULT_CONFIG.copy()
         config["agent_llm_provider"] = "lm_studio"
@@ -317,14 +317,14 @@ class TestTradingGraphRefreshLlms(unittest.TestCase):
 class TestWebInterfaceProviderUpdate(unittest.TestCase):
     """Tests for web interface provider update with LM Studio."""
 
-    @patch("web_interface.TradingGraph")
+    @patch("QuantAgent.web_interface.TradingGraph")
     def test_update_provider_lm_studio(self, mock_tg_class):
         """POST /api/update-provider with lm_studio should succeed."""
         mock_tg = MagicMock()
         mock_tg.config = DEFAULT_CONFIG.copy()
         mock_tg_class.return_value = mock_tg
 
-        from web_interface import app, analyzer
+        from QuantAgent.web_interface import app, analyzer
         analyzer.config = DEFAULT_CONFIG.copy()
         analyzer.trading_graph = mock_tg
         analyzer.save_llm_config = MagicMock(return_value=True)
@@ -341,14 +341,14 @@ class TestWebInterfaceProviderUpdate(unittest.TestCase):
         self.assertEqual(analyzer.config["agent_llm_provider"], "lm_studio")
         self.assertEqual(analyzer.config["graph_llm_provider"], "lm_studio")
 
-    @patch("web_interface.TradingGraph")
+    @patch("QuantAgent.web_interface.TradingGraph")
     def test_update_provider_invalid(self, mock_tg_class):
         """POST /api/update-provider with invalid provider should fail."""
         mock_tg = MagicMock()
         mock_tg.config = DEFAULT_CONFIG.copy()
         mock_tg_class.return_value = mock_tg
 
-        from web_interface import app, analyzer
+        from QuantAgent.web_interface import app, analyzer
         analyzer.config = DEFAULT_CONFIG.copy()
         analyzer.trading_graph = mock_tg
         analyzer.save_llm_config = MagicMock(return_value=True)
@@ -362,14 +362,14 @@ class TestWebInterfaceProviderUpdate(unittest.TestCase):
         data = resp.get_json()
         self.assertIn("error", data)
 
-    @patch("web_interface.TradingGraph")
+    @patch("QuantAgent.web_interface.TradingGraph")
     def test_update_api_key_lm_studio(self, mock_tg_class):
         """POST /api/update-api-key with lm_studio should set env var."""
         mock_tg = MagicMock()
         mock_tg.config = DEFAULT_CONFIG.copy()
         mock_tg_class.return_value = mock_tg
 
-        from web_interface import app, analyzer
+        from QuantAgent.web_interface import app, analyzer
         analyzer.config = DEFAULT_CONFIG.copy()
         analyzer.trading_graph = mock_tg
         analyzer.save_llm_config = MagicMock(return_value=True)
@@ -384,14 +384,14 @@ class TestWebInterfaceProviderUpdate(unittest.TestCase):
         self.assertTrue(data.get("success"))
         self.assertEqual(os.environ.get("LM_STUDIO_API_KEY"), "test-lmstudio-key")
 
-    @patch("web_interface.TradingGraph")
+    @patch("QuantAgent.web_interface.TradingGraph")
     def test_update_api_key_lm_studio_empty_allowed(self, mock_tg_class):
         """POST /api/update-api-key with lm_studio should allow empty API key."""
         mock_tg = MagicMock()
         mock_tg.config = DEFAULT_CONFIG.copy()
         mock_tg_class.return_value = mock_tg
 
-        from web_interface import app, analyzer
+        from QuantAgent.web_interface import app, analyzer
         analyzer.config = DEFAULT_CONFIG.copy()
         analyzer.trading_graph = mock_tg
         analyzer.save_llm_config = MagicMock(return_value=True)
@@ -406,14 +406,14 @@ class TestWebInterfaceProviderUpdate(unittest.TestCase):
         # LM Studio allows empty/missing API key
         self.assertTrue(data.get("success"))
 
-    @patch("web_interface.TradingGraph")
+    @patch("QuantAgent.web_interface.TradingGraph")
     def test_get_api_key_status_lm_studio(self, mock_tg_class):
         """GET /api/get-api-key-status?provider=lm_studio should always report valid."""
         mock_tg = MagicMock()
         mock_tg.config = DEFAULT_CONFIG.copy()
         mock_tg_class.return_value = mock_tg
 
-        from web_interface import app, analyzer
+        from QuantAgent.web_interface import app, analyzer
         config = DEFAULT_CONFIG.copy()
         config["lm_studio_api_key"] = ""
         analyzer.config = config
@@ -430,14 +430,14 @@ class TestWebInterfaceProviderUpdate(unittest.TestCase):
 class TestProviderSwitchBackToOpenAI(unittest.TestCase):
     """Test that switching from LM Studio back to OpenAI resets model names."""
 
-    @patch("web_interface.TradingGraph")
+    @patch("QuantAgent.web_interface.TradingGraph")
     def test_switch_lm_studio_to_openai(self, mock_tg_class):
         """Switching from lm_studio to openai should reset model names."""
         mock_tg = MagicMock()
         mock_tg.config = DEFAULT_CONFIG.copy()
         mock_tg_class.return_value = mock_tg
 
-        from web_interface import app, analyzer
+        from QuantAgent.web_interface import app, analyzer
         config = DEFAULT_CONFIG.copy()
         config["agent_llm_model"] = "google/gemma-4-26b-a4b"
         config["graph_llm_model"] = "google/gemma-4-26b-a4b"
@@ -466,7 +466,7 @@ class TestApplyProviderDefaults(unittest.TestCase):
         config["agent_llm_model"] = "gpt-4o"
         config["graph_llm_model"] = "gpt-4o"
 
-        from web_interface import apply_provider_defaults
+        from QuantAgent.web_interface import apply_provider_defaults
         apply_provider_defaults(config, "lm_studio")
 
         self.assertTrue(config["agent_llm_model"].startswith("google"))
@@ -478,7 +478,7 @@ class TestApplyProviderDefaults(unittest.TestCase):
         config["agent_llm_model"] = "google/my-custom-model"
         config["graph_llm_model"] = "google/another-model"
 
-        from web_interface import apply_provider_defaults
+        from QuantAgent.web_interface import apply_provider_defaults
         apply_provider_defaults(config, "lm_studio")
 
         self.assertEqual(config["agent_llm_model"], "google/my-custom-model")
@@ -488,14 +488,14 @@ class TestApplyProviderDefaults(unittest.TestCase):
 class TestValidateApiKeyLmStudio(unittest.TestCase):
     """Tests for validate_api_key() with lm_studio provider."""
 
-    @patch("web_interface.TradingGraph")
+    @patch("QuantAgent.web_interface.TradingGraph")
     def test_validate_api_key_lm_studio_returns_valid(self, mock_tg_class):
         """POST /api/validate-api-key for lm_studio should return valid: True."""
         mock_tg = MagicMock()
         mock_tg.config = DEFAULT_CONFIG.copy()
         mock_tg_class.return_value = mock_tg
 
-        from web_interface import app, analyzer
+        from QuantAgent.web_interface import app, analyzer
         config = DEFAULT_CONFIG.copy()
         config["lm_studio_api_key"] = ""
         config["agent_llm_provider"] = "lm_studio"
@@ -515,14 +515,14 @@ class TestValidateApiKeyLmStudio(unittest.TestCase):
 class TestUpdateProviderNeedsApiKey(unittest.TestCase):
     """Tests for the needs_api_key flow in update_provider()."""
 
-    @patch("web_interface.TradingGraph")
+    @patch("QuantAgent.web_interface.TradingGraph")
     def test_update_provider_lm_studio_needs_api_key(self, mock_tg_class):
         """When refresh_llms raises 'API key not found', should return needs_api_key: True."""
         mock_tg = MagicMock()
         mock_tg.config = DEFAULT_CONFIG.copy()
         mock_tg_class.return_value = mock_tg
 
-        from web_interface import app, analyzer
+        from QuantAgent.web_interface import app, analyzer
         config = DEFAULT_CONFIG.copy()
         config["lm_studio_api_key"] = ""
         config["agent_llm_provider"] = "lm_studio"

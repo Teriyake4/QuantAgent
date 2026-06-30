@@ -51,8 +51,8 @@ class TestLmStudioIntegration(unittest.TestCase):
 
     def test_create_llm_lm_studio(self):
         """Should create a working LM Studio LLM via ChatOpenAI."""
-        from trading_graph import TradingGraph
-        from default_config import DEFAULT_CONFIG
+        from QuantAgent.trading_graph import TradingGraph
+        from QuantAgent.default_config import DEFAULT_CONFIG
 
         config = DEFAULT_CONFIG.copy()
         config["agent_llm_provider"] = "lm_studio"
@@ -71,8 +71,8 @@ class TestLmStudioIntegration(unittest.TestCase):
 
     def test_lm_studio_simple_invoke(self):
         """Should successfully invoke LM Studio for a simple query."""
-        from trading_graph import TradingGraph
-        from default_config import DEFAULT_CONFIG
+        from QuantAgent.trading_graph import TradingGraph
+        from QuantAgent.default_config import DEFAULT_CONFIG
 
         config = DEFAULT_CONFIG.copy()
         config["agent_llm_provider"] = "lm_studio"
@@ -91,8 +91,8 @@ class TestLmStudioIntegration(unittest.TestCase):
 
     def test_lm_studio_provider_full_lifecycle(self):
         """Test full lifecycle: create -> update key -> refresh."""
-        from trading_graph import TradingGraph
-        from default_config import DEFAULT_CONFIG
+        from QuantAgent.trading_graph import TradingGraph
+        from QuantAgent.default_config import DEFAULT_CONFIG
 
         config = DEFAULT_CONFIG.copy()
         config["agent_llm_provider"] = "lm_studio"
@@ -114,8 +114,8 @@ class TestLmStudioIntegration(unittest.TestCase):
 
     def test_lm_studio_custom_base_url(self):
         """Should respect a custom LM Studio base URL from config."""
-        from trading_graph import TradingGraph
-        from default_config import DEFAULT_CONFIG
+        from QuantAgent.trading_graph import TradingGraph
+        from QuantAgent.default_config import DEFAULT_CONFIG
 
         custom_url = os.environ.get(
             "LM_STUDIO_BASE_URL_OVERRIDE",
