@@ -28,6 +28,8 @@ dependencies = [
     "yfinance>=1.4.0"
 ]
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["QuantAgent*"]
+[tool.setuptools]
+packages = ["QuantAgent"]
+
+[tool.setuptools.package-dir]
+QuantAgent = "."
