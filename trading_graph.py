@@ -256,7 +256,7 @@ class TradingGraph:
                 model=model,
                 temperature=temperature,
                 api_key=api_key,
-                openai_api_base=LM_STUDIO_PROVIDER_CONFIG["base_url"],
+                openai_api_base=self.config.get("lm_studio_base_url", LM_STUDIO_PROVIDER_CONFIG["base_url"]),
             )
         else:
             raise ValueError(f"Unsupported provider: {provider}. Must be one of {', '.join(SUPPORTED_PROVIDERS)}")
